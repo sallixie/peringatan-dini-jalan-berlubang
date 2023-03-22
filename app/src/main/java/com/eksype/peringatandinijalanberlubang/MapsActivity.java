@@ -15,7 +15,9 @@ import androidx.core.content.ContextCompat;
 
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResponse;
@@ -42,11 +44,24 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private Boolean mLocationPermissionsGranted = false;
     private GoogleMap mMap;
     private FusedLocationProviderClient mFusedLocationProviderClient;
+    private LocationCallback locationCallback;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
+        locationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                if (locationResult == null) {
+                    return;
+                }
+                for (Location location : locationResult.getLocations()) {
+                    Log.i(TAG, location.toString());
+                }
+            }
+        };
 
         getLocationPermission();
     }
@@ -79,7 +94,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         try{
             if(mLocationPermissionsGranted){
-
                 final Task location = mFusedLocationProviderClient.getLastLocation();
                 location.addOnCompleteListener(new OnCompleteListener() {
                     @Override
@@ -95,7 +109,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     }
                 });
             }
-        }catch (SecurityException e){
+        } catch (SecurityException e){
             Log.e(TAG, "getDeviceLocation: SecurityException: " + e.getMessage() );
         }
     }
@@ -164,32 +178,31 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         SettingsClient client = LocationServices.getSettingsClient(this);
         Task<LocationSettingsResponse> task = client.checkLocationSettings(builder.build());
 
-//        task.addOnSuccessListener(this, new OnSuccessListener<LocationSettingsResponse>() {
-//            @Override
-//            public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
-//                // All location settings are satisfied. The client can initialize
-//                // location requests here.
-//                // ...
-//            }
-//        });
+        task.addOnSuccessListener(this, new OnSuccessListener<LocationSettingsResponse>() {
+            @Override
+            public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
+                // All location settings are satisfied. The client can initialize
+                // location requests here.
+                // ...
+            }
+        });
 
-//        task.addOnFailureListener(this, new OnFailureListener() {
-//            @Override
-//            public void onFailure(@NonNull Exception e) {
-//                if (e instanceof ResolvableApiException) {
-//                    // Location settings are not satisfied, but this can be fixed
-//                    // by showing the user a dialog.
-//                    try {
-//                        // Show the dialog by calling startResolutionForResult(),
-//                        // and check the result in onActivityResult().
-//                        ResolvableApiException resolvable = (ResolvableApiException) e;
-//                        resolvable.startResolutionForResult(MapsActivity.this,
-//                                REQUEST_CHECK_SETTINGS);
-//                    } catch (IntentSender.SendIntentException sendEx) {
-//                        // Ignore the error.
-//                    }
-//                }
-//            }
-//        });
+        task.addOnFailureListener(this, new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                if (e instanceof ResolvableApiException) {
+                    // Location settings are not satisfied, but this can be fixed
+                    // by showing the user a dialog.
+                    try {
+                        // Show the dialog by calling startResolutionForResult(),
+                        // and check the result in onActivityResult().
+                        ResolvableApiException resolvable = (ResolvableApiException) e;
+                        resolvable.startResolutionForResult(MapsActivity.this, LOCATION_PERMISSION_REQUEST_CODE);
+                    } catch (IntentSender.SendIntentException sendEx) {
+                        // Ignore the error.
+                    }
+                }
+            }
+        });
     }
 }
