@@ -1,10 +1,13 @@
 package com.eksype.peringatandinijalanberlubang;
 
+import android.annotation.SuppressLint;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -27,10 +30,14 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback {
 
@@ -46,10 +53,25 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private FusedLocationProviderClient mFusedLocationProviderClient;
     private LocationCallback locationCallback;
 
+    TextView tvDistance, tvDistanceWarning;
+
+    ArrayList<LatLng> holeLocationList;
+
+    @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
+        tvDistance = (TextView) findViewById(R.id.tvDistance);
+        tvDistanceWarning = (TextView) findViewById(R.id.tvDistanceWarning);
+
+        holeLocationList = new ArrayList<>();
+        holeLocationList.add(new LatLng(0.12933850837264696, 117.48482049795643));
+        holeLocationList.add(new LatLng(0.13238549418455645, 117.4891013187354));
+        holeLocationList.add(new LatLng(0.12663928568638674, 117.48435273422797));
+        holeLocationList.add(new LatLng(0.12418655507480929, 117.48241296718913));
+        holeLocationList.add(new LatLng(0.12184802154055861, 117.48379302973893));
 
         locationCallback = new LocationCallback() {
             @Override
@@ -68,8 +90,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        Toast.makeText(this, "Map is Ready", Toast.LENGTH_SHORT).show();
-        Log.d(TAG, "onMapReady: map is ready");
         mMap = googleMap;
 
         if (mLocationPermissionsGranted) {
@@ -84,10 +104,46 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             mMap.getUiSettings().setMyLocationButtonEnabled(true);
             mMap.getUiSettings().setMapToolbarEnabled(true);
             mMap.getUiSettings().setCompassEnabled(true);
+
+            for (int i = 0; i < holeLocationList.size(); i++){
+                mMap.addMarker(new MarkerOptions().position(holeLocationList.get(i)).title("Hole " + (i+1)));
+            }
+
+            mMap.setOnMyLocationChangeListener(new GoogleMap.OnMyLocationChangeListener() {
+                @Override
+                public void onMyLocationChange(Location location) {
+                    double latitude = location.getLatitude();
+                    double longitude = location.getLongitude();
+                    distanceToHole(latitude, longitude);
+                }
+            });
         }
     }
 
+    private void distanceToHole(double latitude, double longitude){
+        Location myLocation = new Location("My Location");
+        myLocation.setLatitude(latitude);
+        myLocation.setLongitude(longitude);
 
+        float distance = 1000000000;
+        for (int i = 0; i < holeLocationList.size(); i++){
+            Location holeLocation = new Location("Hole Location");
+            holeLocation.setLatitude(holeLocationList.get(i).latitude);
+            holeLocation.setLongitude(holeLocationList.get(i).longitude);
+            float distanceTemp = myLocation.distanceTo(holeLocation);
+            if (distanceTemp < distance){
+                distance = distanceTemp;
+            }
+        }
+
+        if(distance < 300){
+            tvDistance.setText((int) distance + " m");
+            tvDistanceWarning.setText("Hati-hati, ada lubang di dekat anda!");
+        } else {
+            tvDistance.setText("> 300 m");
+            tvDistanceWarning.setText("Lubang tidak terdeteksi di sekitar anda");
+        }
+    }
 
     private void getDeviceLocation(){
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
@@ -100,7 +156,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     public void onComplete(@NonNull Task task) {
                         if(task.isSuccessful()){
                             Location currentLocation = (Location) task.getResult();
-                            Toast.makeText(MapsActivity.this, "Location: " + currentLocation.getLatitude() + ", " + currentLocation.getLongitude(), Toast.LENGTH_LONG).show();
                             moveCamera(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()),
                                     DEFAULT_ZOOM);
                         }else{
@@ -164,45 +219,5 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
             }
         }
-    }
-
-    protected void createLocationRequest() {
-        LocationRequest locationRequest = LocationRequest.create();
-        locationRequest.setInterval(10000);
-        locationRequest.setFastestInterval(5000);
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-
-        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
-                .addLocationRequest(locationRequest);
-
-        SettingsClient client = LocationServices.getSettingsClient(this);
-        Task<LocationSettingsResponse> task = client.checkLocationSettings(builder.build());
-
-        task.addOnSuccessListener(this, new OnSuccessListener<LocationSettingsResponse>() {
-            @Override
-            public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
-                // All location settings are satisfied. The client can initialize
-                // location requests here.
-                // ...
-            }
-        });
-
-        task.addOnFailureListener(this, new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                if (e instanceof ResolvableApiException) {
-                    // Location settings are not satisfied, but this can be fixed
-                    // by showing the user a dialog.
-                    try {
-                        // Show the dialog by calling startResolutionForResult(),
-                        // and check the result in onActivityResult().
-                        ResolvableApiException resolvable = (ResolvableApiException) e;
-                        resolvable.startResolutionForResult(MapsActivity.this, LOCATION_PERMISSION_REQUEST_CODE);
-                    } catch (IntentSender.SendIntentException sendEx) {
-                        // Ignore the error.
-                    }
-                }
-            }
-        });
     }
 }
