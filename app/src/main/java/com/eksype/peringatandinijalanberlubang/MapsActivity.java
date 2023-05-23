@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -53,6 +54,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private FusedLocationProviderClient mFusedLocationProviderClient;
     private LocationCallback locationCallback;
 
+    private MediaPlayer mp;
     TextView tvDistance, tvDistanceWarning;
 
     ArrayList<LatLng> holeLocationList;
@@ -63,15 +65,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
+        mp = MediaPlayer.create(this, R.raw.sample100m);
+
         tvDistance = (TextView) findViewById(R.id.tvDistance);
         tvDistanceWarning = (TextView) findViewById(R.id.tvDistanceWarning);
 
         holeLocationList = new ArrayList<>();
-        holeLocationList.add(new LatLng(0.12933850837264696, 117.48482049795643));
-        holeLocationList.add(new LatLng(0.13238549418455645, 117.4891013187354));
-        holeLocationList.add(new LatLng(0.12663928568638674, 117.48435273422797));
-        holeLocationList.add(new LatLng(0.12418655507480929, 117.48241296718913));
-        holeLocationList.add(new LatLng(0.12184802154055861, 117.48379302973893));
+        holeLocationList.add(new LatLng(-1.181212,116.880119));
+        holeLocationList.add(new LatLng(-1.148495378666009, 116.86299286755566));
+        holeLocationList.add(new LatLng(-1.1503556867004665, 116.86076342928459));
+        holeLocationList.add(new LatLng(-1.149788599870125, 116.86213532024013));
+        holeLocationList.add(new LatLng(-1.1492415393607336, 116.86108389434523));
 
         locationCallback = new LocationCallback() {
             @Override
@@ -142,6 +146,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         } else {
             tvDistance.setText("> 300 m");
             tvDistanceWarning.setText("Lubang tidak terdeteksi di sekitar anda");
+        }
+
+        if(distance <=100) {
+            mp.start();
         }
     }
 
