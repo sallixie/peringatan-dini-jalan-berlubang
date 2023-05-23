@@ -1,13 +1,11 @@
 package com.eksype.peringatandinijalanberlubang;
 
 import android.annotation.SuppressLint;
-import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -17,15 +15,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.LocationSettingsRequest;
-import com.google.android.gms.location.LocationSettingsResponse;
-import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -33,11 +26,8 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback {
@@ -54,7 +44,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private FusedLocationProviderClient mFusedLocationProviderClient;
     private LocationCallback locationCallback;
 
-    private MediaPlayer mp;
+    private MediaPlayer mp100, mp50, mp20;
     TextView tvDistance, tvDistanceWarning;
 
     ArrayList<LatLng> holeLocationList;
@@ -65,7 +55,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
-        mp = MediaPlayer.create(this, R.raw.sample100m);
+        mp100 = MediaPlayer.create(this, R.raw.sample100m);
+        mp50 = MediaPlayer.create(this, R.raw.sample50m);
+        mp20 = MediaPlayer.create(this, R.raw.sample20m);
 
         tvDistance = (TextView) findViewById(R.id.tvDistance);
         tvDistanceWarning = (TextView) findViewById(R.id.tvDistanceWarning);
@@ -143,13 +135,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         if(distance < 300){
             tvDistance.setText((int) distance + " m");
             tvDistanceWarning.setText("Hati-hati, ada lubang di dekat anda!");
+
+            if(distance <= 100 && distance > 50) {
+                mp100.start();
+            } else if (distance <= 50 && distance > 20) {
+                mp50.start();
+            } else if (distance <= 20 && distance > 0) {
+                mp20.start();
+            }
+
         } else {
             tvDistance.setText("> 300 m");
             tvDistanceWarning.setText("Lubang tidak terdeteksi di sekitar anda");
-        }
-
-        if(distance <=100) {
-            mp.start();
         }
     }
 

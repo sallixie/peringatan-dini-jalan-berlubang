@@ -2,8 +2,10 @@ package com.eksype.peringatandinijalanberlubang;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -15,11 +17,14 @@ import com.google.android.gms.common.GoogleApiAvailability;
 
 public class MainActivity extends AppCompatActivity {
 
-    Button btnMaps, btnStorage;
+    Button btnMaps, btnStorage, btnSound;
     private static final String TAG = "MainActivity";
     private static final int ERROR_DIALOG_REQUEST = 9001;
+    private MediaPlayer mp;
 
 
+
+    @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -27,6 +32,10 @@ public class MainActivity extends AppCompatActivity {
 
         btnMaps = findViewById(R.id.btnMaps);
         btnStorage = findViewById(R.id.btnStorage);
+        btnSound = findViewById(R.id.btnSound);
+
+        mp = MediaPlayer.create(this, R.raw.sample100m);
+
 
         btnMaps.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -41,6 +50,13 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Intent intent = new Intent(MainActivity.this, StorageActivity.class);
                 startActivity(intent);
+            }
+        });
+
+        btnSound.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mp.start();
             }
         });
 
