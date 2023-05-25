@@ -2,6 +2,8 @@ package com.eksype.peringatandinijalanberlubang;
 
 import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.location.Location;
 import android.media.MediaPlayer;
 import android.os.Bundle;
@@ -23,11 +25,13 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback {
@@ -63,11 +67,26 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         tvDistanceWarning = (TextView) findViewById(R.id.tvDistanceWarning);
 
         holeLocationList = new ArrayList<>();
-        holeLocationList.add(new LatLng(-1.181212,116.880119));
-        holeLocationList.add(new LatLng(-1.148495378666009, 116.86299286755566));
-        holeLocationList.add(new LatLng(-1.1503556867004665, 116.86076342928459));
-        holeLocationList.add(new LatLng(-1.149788599870125, 116.86213532024013));
-        holeLocationList.add(new LatLng(-1.1492415393607336, 116.86108389434523));
+
+
+        String data = "";
+        StringBuffer sbuffer = new StringBuffer();
+        InputStream is = this.getResources().openRawResource(R.raw.data_koordinat);
+
+        try {
+            byte[] buffer = new byte[is.available()];
+            while (is.read(buffer) != -1) {
+                data = new String(buffer);
+            }
+            String[] rows = data.split("\n");
+            for (int i = 0; i < rows.length; i++) {
+                String[] columns = rows[i].split(",");
+                holeLocationList.add(new LatLng(Double.parseDouble(columns[0]), Double.parseDouble(columns[1])));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
 
         locationCallback = new LocationCallback() {
             @Override
@@ -102,7 +121,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             mMap.getUiSettings().setCompassEnabled(true);
 
             for (int i = 0; i < holeLocationList.size(); i++){
-                mMap.addMarker(new MarkerOptions().position(holeLocationList.get(i)).title("Hole " + (i+1)));
+                MarkerOptions markerOptions = new MarkerOptions().position(holeLocationList.get(i)).title("Hole " + (i+1));
+//                markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.marker));
+                BitmapDrawable bitmapDrawable = (BitmapDrawable) getResources().getDrawable(R.drawable.marker);
+                int height = bitmapDrawable.getBitmap().getHeight();
+                int width = bitmapDrawable.getBitmap().getWidth();
+                markerOptions.icon(BitmapDescriptorFactory.fromBitmap(Bitmap.createScaledBitmap(bitmapDrawable.getBitmap(), width/10, height/10, false)));
+                mMap.addMarker(markerOptions);
             }
 
             mMap.setOnMyLocationChangeListener(new GoogleMap.OnMyLocationChangeListener() {
