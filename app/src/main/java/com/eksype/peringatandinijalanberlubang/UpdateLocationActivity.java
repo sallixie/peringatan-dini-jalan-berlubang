@@ -102,7 +102,6 @@ public class UpdateLocationActivity extends AppCompatActivity {
                     float distanceInMeters = results[0];
                     Toast.makeText(UpdateLocationActivity.this, String.valueOf(distanceInMeters), Toast.LENGTH_LONG).show();
 
-
                 }
             }
         });

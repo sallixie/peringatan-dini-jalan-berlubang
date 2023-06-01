@@ -3,11 +3,14 @@ package com.eksype.peringatandinijalanberlubang;
 import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.location.Location;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.CompoundButton;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,13 +29,28 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.JointType;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.maps.model.RoundCap;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback {
 
@@ -50,8 +68,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private MediaPlayer mp100, mp50, mp20;
     TextView tvDistance, tvDistanceWarning;
+    Switch showRiwayat;
 
     ArrayList<LatLng> holeLocationList;
+    Polyline polyline1;
+    FirebaseFirestore db;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -65,8 +86,22 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         tvDistance = (TextView) findViewById(R.id.tvDistance);
         tvDistanceWarning = (TextView) findViewById(R.id.tvDistanceWarning);
+        showRiwayat = (Switch) findViewById(R.id.showRiwayat);
+
+//        set on showRiwayat switch change listener
+        showRiwayat.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(showRiwayat.isChecked()){
+                    getData();
+                } else {
+                    hideRiwayat();
+                }
+            }
+        });
 
         holeLocationList = new ArrayList<>();
+        db = FirebaseFirestore.getInstance();
 
 
         String data = "";
@@ -136,6 +171,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     double latitude = location.getLatitude();
                     double longitude = location.getLongitude();
                     distanceToHole(latitude, longitude);
+
+                    Map<String, Object> data = new HashMap<>();
+                    data.put("latitude", latitude);
+                    data.put("longitude", longitude);
+                    data.put("created_at", new Timestamp(new Date()));
+
+                    dbSaveLocation(data);
                 }
             });
         }
@@ -250,4 +292,76 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         }
     }
+
+    private void dbSaveLocation(Map<String, Object> data) {
+        db.collection("perjalanan")
+                .add(data)
+                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                    @Override
+                    public void onSuccess(DocumentReference documentReference) {
+                        Toast.makeText(MapsActivity.this, "Berhasil menyimpan riwayat perjalanan", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(MapsActivity.this, "Gagal menyimpan riwayat perjalanan", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    private void getData() {
+        List<LatLng> latLngs = new ArrayList<>();
+        db.collection("perjalanan")
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                latLngs.add(new LatLng(document.getDouble("latitude"), document.getDouble("longitude")));
+                                Log.d("DB_DATA", document.getId() + " => " + document.getData());
+                            }
+                            polyline1 = mMap.addPolyline(new PolylineOptions()
+                                    .clickable(true)
+                                    .add(latLngs.toArray(new LatLng[latLngs.size()])));
+                            polyline1.setTag("A");
+                            stylePolyline(polyline1);
+                        } else {
+                            Log.w("DB_DATA", "Error getting documents.", task.getException());
+                        }
+                    }
+                });
+    }
+
+    private void stylePolyline(Polyline polyline) {
+        String type = "";
+        // Get the data object stored with the polyline.
+        if (polyline.getTag() != null) {
+            type = polyline.getTag().toString();
+        }
+
+        switch (type) {
+            case "A":
+                // Use a custom bitmap as the cap at the start of the line.
+                polyline.setStartCap(new RoundCap());
+                break;
+            case "B":
+                // Use a round cap at the start of the line.
+                polyline.setStartCap(new RoundCap());
+                break;
+        }
+
+        polyline.setEndCap(new RoundCap());
+        polyline.setWidth(4);
+        polyline.setColor(Color.rgb(0, 196, 255));
+        polyline.setJointType(JointType.ROUND);
+    }
+
+    private void hideRiwayat() {
+        if (polyline1 != null) {
+            polyline1.remove();
+        }
+    }
+
 }

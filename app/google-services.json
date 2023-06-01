@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "508607488308",
+    "project_id": "early-warning-cf825",
+    "storage_bucket": "early-warning-cf825.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:508607488308:android:d8bef2c69d62cd4eb08561",
+        "android_client_info": {
+          "package_name": "com.eksype.peringatandinijalanberlubang"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD8tUpDB2x79IIpi_G7HOalqzR8VOlrKrk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
