@@ -29,6 +29,9 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
+import com.google.android.gms.maps.model.Dot;
 import com.google.android.gms.maps.model.JointType;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -72,6 +75,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     ArrayList<LatLng> holeLocationList;
     Polyline polyline1;
+    Circle circle;
     FirebaseFirestore db;
 
     @SuppressLint("MissingInflatedId")
@@ -299,7 +303,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
                     @Override
                     public void onSuccess(DocumentReference documentReference) {
-                        Toast.makeText(MapsActivity.this, "Berhasil menyimpan riwayat perjalanan", Toast.LENGTH_SHORT).show();
+//                        Toast.makeText(MapsActivity.this, "Berhasil menyimpan riwayat perjalanan", Toast.LENGTH_SHORT).show();
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
@@ -322,11 +326,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                                 latLngs.add(new LatLng(document.getDouble("latitude"), document.getDouble("longitude")));
                                 Log.d("DB_DATA", document.getId() + " => " + document.getData());
                             }
-                            polyline1 = mMap.addPolyline(new PolylineOptions()
-                                    .clickable(true)
-                                    .add(latLngs.toArray(new LatLng[latLngs.size()])));
-                            polyline1.setTag("A");
-                            stylePolyline(polyline1);
+                            for(int i=0; i<latLngs.size(); i++) {
+                                 circle = mMap.addCircle(new CircleOptions()
+                                        .center(latLngs.get(i))
+                                        .radius(3)
+                                        .fillColor(Color.rgb(0, 196, 255))
+                                        .strokeColor(Color.rgb(0, 196, 255))); // In meters
+//                                polyline1 = mMap.addPolyline(new PolylineOptions()
+//                                        .clickable(true)
+//                                        .add(latLngs.get(i)));
+//                                polyline1.setTag("A");
+//                                stylePolyline(polyline1);
+                            }
                         } else {
                             Log.w("DB_DATA", "Error getting documents.", task.getException());
                         }
@@ -353,14 +364,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
 
         polyline.setEndCap(new RoundCap());
-        polyline.setWidth(4);
+        polyline.setWidth(16);
         polyline.setColor(Color.rgb(0, 196, 255));
         polyline.setJointType(JointType.ROUND);
     }
 
     private void hideRiwayat() {
-        if (polyline1 != null) {
-            polyline1.remove();
+        if (circle != null) {
+            circle.remove();
         }
     }
 
