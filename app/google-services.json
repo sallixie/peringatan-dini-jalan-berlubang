@@ -1,26 +1,44 @@
 {
   "project_info": {
-    "project_number": "508607488308",
-    "project_id": "early-warning-cf825",
-    "storage_bucket": "early-warning-cf825.appspot.com"
+    "project_number": "423121907382",
+    "project_id": "early-warning-3aa72",
+    "storage_bucket": "early-warning-3aa72.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:508607488308:android:d8bef2c69d62cd4eb08561",
+        "mobilesdk_app_id": "1:423121907382:android:784084b9de70f1979a4017",
         "android_client_info": {
           "package_name": "com.eksype.peringatandinijalanberlubang"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "423121907382-ni3kttroaaicgii41hh4h26subc5eu2d.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.eksype.peringatandinijalanberlubang",
+            "certificate_hash": "03f48366675e9f05b57799cdd6bba36fec2e91ae"
+          }
+        },
+        {
+          "client_id": "423121907382-5fkv71tgr2j2enus0p73or3ev427egva.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": "AIzaSyD8tUpDB2x79IIpi_G7HOalqzR8VOlrKrk"
+          "current_key": "AIzaSyDp-UJwi8ayGSbQtyGHz0h0s8P4RyZISZM"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "423121907382-5fkv71tgr2j2enus0p73or3ev427egva.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
