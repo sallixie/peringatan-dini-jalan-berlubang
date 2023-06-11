@@ -94,19 +94,19 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         tvDistance = (TextView) findViewById(R.id.tvDistance);
         tvDistanceWarning = (TextView) findViewById(R.id.tvDistanceWarning);
         tvLubangDilewati = (TextView) findViewById(R.id.tvLubangDilewati);
-        showRiwayat = (Switch) findViewById(R.id.showRiwayat);
+//        showRiwayat = (Switch) findViewById(R.id.showRiwayat);
 
 //        set on showRiwayat switch change listener
-        showRiwayat.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(showRiwayat.isChecked()){
-                    getData();
-                } else {
-                    hideRiwayat();
-                }
-            }
-        });
+//        showRiwayat.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+//            @Override
+//            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+//                if(showRiwayat.isChecked()){
+//                    getData();
+//                } else {
+//                    hideRiwayat();
+//                }
+//            }
+//        });
 
         holeLocationList = new ArrayList<>();
         db = FirebaseFirestore.getInstance();
@@ -180,12 +180,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     double longitude = location.getLongitude();
                     distanceToHole(latitude, longitude);
 
-                    Map<String, Object> data = new HashMap<>();
-                    data.put("latitude", latitude);
-                    data.put("longitude", longitude);
-                    data.put("created_at", new Timestamp(new Date()));
-
-                    dbSaveLocation(data);
+//                    Map<String, Object> data = new HashMap<>();
+//                    data.put("latitude", latitude);
+//                    data.put("longitude", longitude);
+//                    data.put("created_at", new Timestamp(new Date()));
+//
+//                    dbSaveLocation(data);
                     getLubangDilewati();
                 }
             });
@@ -309,21 +309,21 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-    private void dbSaveLocation(Map<String, Object> data) {
-        db.collection("perjalanan")
-                .add(data)
-                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-                    @Override
-                    public void onSuccess(DocumentReference documentReference) {
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(MapsActivity.this, "Gagal menyimpan riwayat perjalanan", Toast.LENGTH_SHORT).show();
-                    }
-                });
-    }
+//    private void dbSaveLocation(Map<String, Object> data) {
+//        db.collection("perjalanan")
+//                .add(data)
+//                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+//                    @Override
+//                    public void onSuccess(DocumentReference documentReference) {
+//                    }
+//                })
+//                .addOnFailureListener(new OnFailureListener() {
+//                    @Override
+//                    public void onFailure(@NonNull Exception e) {
+//                        Toast.makeText(MapsActivity.this, "Gagal menyimpan riwayat perjalanan", Toast.LENGTH_SHORT).show();
+//                    }
+//                });
+//    }
 
     private void dbSaveLubangDilewati(Map<String, Object> data) {
         db.collection("lubang_dilewati")
@@ -341,38 +341,38 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 });
     }
 
-    private void getData() {
-        List<LatLng> latLngs = new ArrayList<>();
-        db.collection("perjalanan")
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            for (QueryDocumentSnapshot document : task.getResult()) {
-                                latLngs.add(new LatLng(document.getDouble("latitude"), document.getDouble("longitude")));
-                                Log.d("DB_DATA", document.getId() + " => " + document.getData());
-                            }
-                            for(int i=0; i<latLngs.size(); i++) {
-                                 circle = mMap.addCircle(new CircleOptions()
-                                        .center(latLngs.get(i))
-                                        .radius(10)
-                                        .fillColor(Color.rgb(0, 196, 255))
-                                        .strokeColor(Color.rgb(0, 196, 255))); // In meters
-                                circle.setTag("A");
-
-//                                polyline1 = mMap.addPolyline(new PolylineOptions()
-//                                        .clickable(true)
-//                                        .add(latLngs.get(i)));
-//                                polyline1.setTag("A");
-//                                stylePolyline(polyline1);
-                            }
-                        } else {
-                            Log.w("DB_DATA", "Error getting documents.", task.getException());
-                        }
-                    }
-                });
-    }
+//    private void getData() {
+//        List<LatLng> latLngs = new ArrayList<>();
+//        db.collection("perjalanan")
+//                .get()
+//                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+//                    @Override
+//                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+//                        if (task.isSuccessful()) {
+//                            for (QueryDocumentSnapshot document : task.getResult()) {
+//                                latLngs.add(new LatLng(document.getDouble("latitude"), document.getDouble("longitude")));
+//                                Log.d("DB_DATA", document.getId() + " => " + document.getData());
+//                            }
+//                            for(int i=0; i<latLngs.size(); i++) {
+//                                 circle = mMap.addCircle(new CircleOptions()
+//                                        .center(latLngs.get(i))
+//                                        .radius(10)
+//                                        .fillColor(Color.rgb(0, 196, 255))
+//                                        .strokeColor(Color.rgb(0, 196, 255))); // In meters
+//                                circle.setTag("A");
+//
+////                                polyline1 = mMap.addPolyline(new PolylineOptions()
+////                                        .clickable(true)
+////                                        .add(latLngs.get(i)));
+////                                polyline1.setTag("A");
+////                                stylePolyline(polyline1);
+//                            }
+//                        } else {
+//                            Log.w("DB_DATA", "Error getting documents.", task.getException());
+//                        }
+//                    }
+//                });
+//    }
 
     private void getLubangDilewati() {
         int lubangDilewati = 0;
@@ -392,35 +392,35 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
     }
 
-    private void stylePolyline(Polyline polyline) {
-        String type = "";
-        // Get the data object stored with the polyline.
-        if (polyline.getTag() != null) {
-            type = polyline.getTag().toString();
-        }
+//    private void stylePolyline(Polyline polyline) {
+//        String type = "";
+//        // Get the data object stored with the polyline.
+//        if (polyline.getTag() != null) {
+//            type = polyline.getTag().toString();
+//        }
+//
+//        switch (type) {
+//            case "A":
+//                // Use a custom bitmap as the cap at the start of the line.
+//                polyline.setStartCap(new RoundCap());
+//                break;
+//            case "B":
+//                // Use a round cap at the start of the line.
+//                polyline.setStartCap(new RoundCap());
+//                break;
+//        }
+//
+//        polyline.setEndCap(new RoundCap());
+//        polyline.setWidth(16);
+//        polyline.setColor(Color.rgb(0, 196, 255));
+//        polyline.setJointType(JointType.ROUND);
+//    }
 
-        switch (type) {
-            case "A":
-                // Use a custom bitmap as the cap at the start of the line.
-                polyline.setStartCap(new RoundCap());
-                break;
-            case "B":
-                // Use a round cap at the start of the line.
-                polyline.setStartCap(new RoundCap());
-                break;
-        }
-
-        polyline.setEndCap(new RoundCap());
-        polyline.setWidth(16);
-        polyline.setColor(Color.rgb(0, 196, 255));
-        polyline.setJointType(JointType.ROUND);
-    }
-
-    private void hideRiwayat() {
-        Toast.makeText(this, "AWDAWD", Toast.LENGTH_SHORT).show();
-        circle.remove();
-        circle.setRadius(0);
-        circle.setVisible(false);
-    }
+//    private void hideRiwayat() {
+//        Toast.makeText(this, "AWDAWD", Toast.LENGTH_SHORT).show();
+//        circle.remove();
+//        circle.setRadius(0);
+//        circle.setVisible(false);
+//    }
 
 }
