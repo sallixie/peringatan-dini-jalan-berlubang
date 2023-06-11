@@ -31,20 +31,22 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
-import com.google.android.gms.maps.model.Dot;
 import com.google.android.gms.maps.model.JointType;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
-import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.maps.model.RoundCap;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.AggregateQuery;
+import com.google.firebase.firestore.AggregateQuerySnapshot;
+import com.google.firebase.firestore.AggregateSource;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
@@ -54,6 +56,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback {
 
@@ -70,7 +73,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private LocationCallback locationCallback;
 
     private MediaPlayer mp100, mp50, mp20;
-    TextView tvDistance, tvDistanceWarning;
+    TextView tvDistance, tvDistanceWarning, tvLubangDilewati;
     Switch showRiwayat;
 
     ArrayList<LatLng> holeLocationList;
@@ -90,6 +93,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         tvDistance = (TextView) findViewById(R.id.tvDistance);
         tvDistanceWarning = (TextView) findViewById(R.id.tvDistanceWarning);
+        tvLubangDilewati = (TextView) findViewById(R.id.tvLubangDilewati);
         showRiwayat = (Switch) findViewById(R.id.showRiwayat);
 
 //        set on showRiwayat switch change listener
@@ -182,6 +186,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     data.put("created_at", new Timestamp(new Date()));
 
                     dbSaveLocation(data);
+                    getLubangDilewati();
                 }
             });
         }
@@ -213,6 +218,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 mp50.start();
             } else if (distance <= 20 && distance > 0) {
                 mp20.start();
+
+                Map<String, Object> data = new HashMap<>();
+                data.put("latitude", latitude);
+                data.put("longitude", longitude);
+                data.put("created_at", new Timestamp(new Date()));
+
+                dbSaveLubangDilewati(data);
             }
 
         } else {
@@ -303,13 +315,28 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
                     @Override
                     public void onSuccess(DocumentReference documentReference) {
-//                        Toast.makeText(MapsActivity.this, "Berhasil menyimpan riwayat perjalanan", Toast.LENGTH_SHORT).show();
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
                         Toast.makeText(MapsActivity.this, "Gagal menyimpan riwayat perjalanan", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    private void dbSaveLubangDilewati(Map<String, Object> data) {
+        db.collection("lubang_dilewati")
+                .add(data)
+                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                    @Override
+                    public void onSuccess(DocumentReference documentReference) {
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(MapsActivity.this, "Gagal menyimpan riwayat lubang dilewati", Toast.LENGTH_SHORT).show();
                     }
                 });
     }
@@ -329,9 +356,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                             for(int i=0; i<latLngs.size(); i++) {
                                  circle = mMap.addCircle(new CircleOptions()
                                         .center(latLngs.get(i))
-                                        .radius(3)
+                                        .radius(10)
                                         .fillColor(Color.rgb(0, 196, 255))
                                         .strokeColor(Color.rgb(0, 196, 255))); // In meters
+                                circle.setTag("A");
+
 //                                polyline1 = mMap.addPolyline(new PolylineOptions()
 //                                        .clickable(true)
 //                                        .add(latLngs.get(i)));
@@ -343,6 +372,24 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                         }
                     }
                 });
+    }
+
+    private void getLubangDilewati() {
+        int lubangDilewati = 0;
+        Query query = db.collection("lubang_dilewati");
+        AggregateQuery lubangDilewatiQuery = query.count();
+
+        lubangDilewatiQuery.get(AggregateSource.SERVER).addOnCompleteListener(new OnCompleteListener<AggregateQuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<AggregateQuerySnapshot> task) {
+                if (task.isSuccessful()) {
+                    AggregateQuerySnapshot snapshot = task.getResult();
+                    tvLubangDilewati.setText("Lubang Dilewati : " +String.valueOf(snapshot.getCount()) + " lubang");
+                } else {
+                    Log.d("LUBANG_DILEWATI", "Error getting documents: ", task.getException());
+                }
+            }
+        });
     }
 
     private void stylePolyline(Polyline polyline) {
@@ -370,7 +417,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void hideRiwayat() {
-            circle.remove();
+        Toast.makeText(this, "AWDAWD", Toast.LENGTH_SHORT).show();
+        circle.remove();
+        circle.setRadius(0);
+        circle.setVisible(false);
     }
 
 }
