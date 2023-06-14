@@ -94,19 +94,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         tvDistance = (TextView) findViewById(R.id.tvDistance);
         tvDistanceWarning = (TextView) findViewById(R.id.tvDistanceWarning);
         tvLubangDilewati = (TextView) findViewById(R.id.tvLubangDilewati);
-//        showRiwayat = (Switch) findViewById(R.id.showRiwayat);
+        showRiwayat = (Switch) findViewById(R.id.showRiwayat);
 
-//        set on showRiwayat switch change listener
-//        showRiwayat.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-//            @Override
-//            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-//                if(showRiwayat.isChecked()){
-//                    getData();
-//                } else {
-//                    hideRiwayat();
-//                }
-//            }
-//        });
+        showRiwayat.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(showRiwayat.isChecked()){
+                    getLubangDilewati();
+                } else {
+                    hideRiwayat();
+                }
+            }
+        });
 
         holeLocationList = new ArrayList<>();
         db = FirebaseFirestore.getInstance();
@@ -186,7 +185,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 //                    data.put("created_at", new Timestamp(new Date()));
 //
 //                    dbSaveLocation(data);
-                    getLubangDilewati();
                 }
             });
         }
@@ -416,11 +414,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 //        polyline.setJointType(JointType.ROUND);
 //    }
 
-//    private void hideRiwayat() {
-//        Toast.makeText(this, "AWDAWD", Toast.LENGTH_SHORT).show();
-//        circle.remove();
-//        circle.setRadius(0);
-//        circle.setVisible(false);
-//    }
+    private void hideRiwayat() {
+        tvLubangDilewati.setText("Lubang Dilewati : 0 lubang");
+    }
 
 }
